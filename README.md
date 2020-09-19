@@ -7,14 +7,14 @@
 -LibGdx kullanarak var olan bir oyunun klonunu yaptık geliştirmeler yapacağız.
 
 LibGDX ile:
--Collider ve Collision örnekleri
--Background yapımı
--Örnek ana karakter
--Örnek Düşman Karakter
--Dizileri kullanarak döngü oluşturduk
--Random Sınıfı kullandık
--Font eklemeyi gördük
--Skor eklemeyi ve işlemeyi öğrendik
+- Collider ve Collision örnekleri
+- Background yapımı
+- Örnek ana karakter
+- Örnek Düşman Karakter
+- Dizileri kullanarak döngü oluşturduk
+- Random Sınıfı kullandık
+- Font eklemeyi gördük
+- Skor eklemeyi ve işlemeyi öğrendik
 
 gibi ufak çaplı örnekler ile oyunumuzu tamamladık.
 
