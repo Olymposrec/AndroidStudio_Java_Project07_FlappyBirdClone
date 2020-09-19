@@ -1,0 +1,196 @@
+/**
+ * Extending from screen adapter to gain it's functionality and implement the Gesture Listener to use input.
+ */
+public class TestScreen extends ScreenAdapter implements GestureDetector.GestureListener {
+
+    // Declare fields, here we reserve memory to put the objects in.
+    // There is almost never a reason to make your fields public.
+    // Expose them with getters and setters if you need too.
+    private SpriteBatch spriteBatch;
+    private Viewport viewport;
+    private Stage stage;
+
+    private BitmapFont font;
+
+    /**
+     * The constructor gets run whenever you use the new keyword.
+     * This is a good place to initialize the fields.
+     */
+    public TestScreen() {
+        spriteBatch = new SpriteBatch();
+
+        // There are many viewports, this just sets the viewport to the size of the window width and
+        // height. Note that most, if not all other viewports ask for worldWidth and worldHeight not
+        // screenWidth and screenHeight.
+        // It is also important to note that at this point when the code runs the window is not opened
+        // yet so the viewport does not get any width. That is why we need to update it in the resize
+        // method below, this will also make sure it does it's job when stretching the window.
+        viewport = new ScreenViewport();
+        viewport.apply();
+
+        // Never load assets and textures in the game loop. Unless of course you let the player load
+        // a image but then just load it once and not every frame.
+        // I used a random font in my library with the size of 20 pixels.
+        font = new BitmapFont(Gdx.files.internal("fonts/sarpanch_20.fnt"));
+
+
+        // I put the stage setup in it's own method.
+        stage = new Stage();
+        setupStage();
+
+        // Input multiplexer allows for multiple input sources. In this case we made this screen
+        // a GestureListener and the stage also needs input if you want to press buttons.
+        Gdx.input.setInputProcessor(new InputMultiplexer(
+            new GestureDetector(this),
+            stage
+        ));
+    }
+
+    /**
+     * This is already a fairly long method. I could have put the click listener in it's own method
+     * so we could reuse it on other actors and the code will be more readable.
+     */
+    private void setupStage() {
+        // Use clear instead of the new keyword whenever you can.
+        stage.clear();
+
+        // I advice to use the Skin functionality for actor elements. It works great when you know
+        // what you are doing. For now, just a style object.
+        Label.LabelStyle style = new Label.LabelStyle(font, Color.RED);
+
+        // final makes sure you won't put a new object in the field. It is needed because I use it
+        // in the listener/observer pattern below and that only runs when it observers a specific
+        // event. Thus it needs to still be the same object.
+        final Label label = new Label("Hello World", style);
+        label.setPosition(100, 100);
+
+        // Add awesome effect to label.
+        label.addListener(new ClickListener() {
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                label.getStyle().fontColor = Color.BLUE;
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                label.getStyle().fontColor = Color.RED;
+            }
+        });
+        // Instead I could have moved this click listener to addHoverColor(Actor actor)... 
+        // sure, the above code would remain similar but in here it would read.
+        // addHoverColor(label);
+        // Which is much more readable.
+
+        // add the Label actor to stage.
+        stage.addActor(label);
+    }
+
+    /**
+     * render is the game loop. delta is the time since previous frame.
+     * @param delta
+     */
+    @Override
+    public void render(float delta) {
+        super.render(delta);
+
+        // Unfortunately LibgDX couples logic and drawing in this method.
+        // Always remember to do the logic first and then render
+        // Let's make 2 methods for that to keep the code neat and decoupled.
+        update(delta);
+        draw();
+
+        //I use Stage to draw my GUI, the logic goes in update but the gui is always drawn on top
+        drawGui();
+    }
+
+
+    private void update(float delta) {
+        stage.act();
+    }
+
+    private void draw() {
+        //Clear screen and fill it with color.
+        Gdx.gl.glClearColor(.05f, .05f, .05f, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        // I want to be able to move the camera around so the sprite batch needs to know it projection
+        spriteBatch.setProjectionMatrix(viewport.getCamera().combined);
+
+        spriteBatch.setColor(Color.RED);
+
+        spriteBatch.begin();
+        //Use the SpriteBatch to draw the font.
+        font.draw(spriteBatch, "Hello World", 100, 100);
+        spriteBatch.end();
+
+        //System.out.println(viewport.getCamera().viewportWidth);
+
+    }
+
+    private void drawGui() {
+        stage.draw();
+    }
+
+    /**
+     * resize is called whenever the window changes size. So also at the start when the window is
+     * being set to your or default config size.
+     * @param width
+     * @param height
+     */
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        viewport.update(width, height);
+    }
+
+    // Screen adapter also has pause(), resume() and dispose(). But I leave those for now.
+
+
+    // Following the mandatory methods from the GestureListener. I just use pan to move the camera around
+    @Override
+    public boolean touchDown(float x, float y, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean tap(float x, float y, int count, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean longPress(float x, float y) {
+        return false;
+    }
+
+    @Override
+    public boolean fling(float velocityX, float velocityY, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean pan(float x, float y, float deltaX, float deltaY) {
+        viewport.getCamera().translate(-deltaX, deltaY, 0);
+        viewport.getCamera().update();
+        return false;
+    }
+
+    @Override
+    public boolean panStop(float x, float y, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean zoom(float initialDistance, float distance) {
+        return false;
+    }
+
+    @Override
+    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
+        return false;
+    }
+
+    @Override
+    public void pinchStop() {
+
+    }
+}
